@@ -9,5 +9,9 @@
     "dev": "cd backend && npm run dev",
     "build": "cd backend && npm run build",
     "start": "cd backend && npm run start"
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^11.2.5",
+    "swagger-ui-express": "^5.0.1"
   }
 }
