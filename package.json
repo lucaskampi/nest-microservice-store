@@ -1,0 +1,13 @@
+{
+  "name": "nest-microservice-store",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "build": "cd backend && npm run build",
+    "start": "cd backend && npm run start"
+  }
+}
