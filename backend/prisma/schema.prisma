@@ -15,3 +15,15 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Purchase {
+  id                 Int            @id @default(autoincrement())
+  orderId            Int?
+  preparationTime    Int?
+  destinationAddress String
+  deliveryDate       DateTime?
+  voucher            Int?
+  state              String         @default("RECEIVED")
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
