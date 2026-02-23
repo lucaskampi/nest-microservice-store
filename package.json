@@ -1,17 +1,29 @@
 {
   "name": "nest-microservice-store",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "NestJS Microservices Store - Portfolio Project",
   "workspaces": [
-    "backend"
+    "packages/shared",
+    "auth",
+    "backend",
+    "gateway",
+    "supplier",
+    "carrier"
   ],
   "scripts": {
-    "dev": "cd backend && npm run dev",
-    "build": "cd backend && npm run build",
-    "start": "cd backend && npm run start"
+    "build": "npm run build --workspaces --if-present",
+    "dev:auth": "npm run dev -w auth",
+    "dev:store": "npm run dev -w backend",
+    "dev:supplier": "npm run dev -w supplier",
+    "dev:carrier": "npm run dev -w carrier",
+    "dev:gateway": "npm run dev -w gateway",
+    "dev:all": "concurrently \"npm:dev:auth\" \"npm:dev:store\" \"npm:dev:supplier\" \"npm:dev:carrier\" \"npm:dev:gateway\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
   },
-  "dependencies": {
-    "@nestjs/swagger": "^11.2.5",
-    "swagger-ui-express": "^5.0.1"
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
