@@ -1,6 +1,8 @@
 version: '3.8'
 
 services:
+  # ==================== Application Services ====================
+  
   gateway:
     build: ./gateway
     container_name: gateway
@@ -13,6 +15,8 @@ services:
       - STORE_SERVICE_URL=http://store:4000/api
       - SUPPLIER_SERVICE_URL=http://supplier:4001/api
       - CARRIER_SERVICE_URL=http://carrier:4002/api
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./gateway:/app
     depends_on:
@@ -20,6 +24,7 @@ services:
       - store
       - supplier
       - carrier
+      - rabbitmq
 
   auth:
     build: ./auth
@@ -30,6 +35,7 @@ services:
       - PORT=4088
       - JWT_SECRET=your-secret-key-change-in-production
       - DATABASE_URL=file:./prisma/dev.db
+      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./auth:/app
       - ./auth/prisma/dev.db:/app/prisma/dev.db
@@ -44,12 +50,15 @@ services:
       - DATABASE_URL=file:./prisma/dev.db
       - SUPPLIER_SERVICE_URL=http://supplier:4001/api
       - CARRIER_SERVICE_URL=http://carrier:4002/api
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./backend:/app
       - ./backend/prisma/dev.db:/app/prisma/dev.db
     depends_on:
       - supplier
       - carrier
+      - rabbitmq
 
   supplier:
     build: ./supplier
@@ -58,8 +67,14 @@ services:
       - "4001:4001"
     environment:
       - PORT=4001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/supplier?schema=public
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./supplier:/app
+    depends_on:
+      - postgres
+      - rabbitmq
 
   carrier:
     build: ./carrier
@@ -68,44 +83,90 @@ services:
       - "4002:4002"
     environment:
       - PORT=4002
+      - DATABASE_URL=mysql://root:root@mysql:3306/carrier
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./carrier:/app
+    depends_on:
+      - mysql
+      - rabbitmq
 
-networks:
-  default:
-    driver: bridge
-version: "3.8"
-services:
-  db:
+  # ==================== Infrastructure Services ====================
+
+  postgres:
     image: postgres:15
+    container_name: postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nest_store
+      POSTGRES_DB: supplier
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+  mysql:
+    image: mysql:8
+    container_name: mysql
     restart: unless-stopped
-    depends_on:
-      - db
-    # load environment variables from .env (define DATABASE_URL there)
-    env_file:
-      - ./.env
     environment:
-      NODE_ENV: development
-    ports:
-      - "4000:4000"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: carrier
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "6831:6831/udp"
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+      SPAN_STORAGE_TYPE: badger
+    volumes:
+      - jaeger_data:/var/lib/jaeger
+
+networks:
+  default:
+    driver: bridge
 
 volumes:
-  db_data:
+  postgres_data:
+  mysql_data:
+  rabbitmq_data:
+  jaeger_data:
