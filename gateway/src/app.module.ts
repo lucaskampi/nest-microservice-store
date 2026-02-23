@@ -6,11 +6,13 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { ProxyController } from './proxy/proxy.controller'
 import { AuthController } from './auth/auth.controller'
 import { JwtStrategy } from './auth/jwt.strategy'
+import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
     HttpModule,
     PassportModule,
+    HealthModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,
