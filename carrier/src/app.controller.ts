@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body, Get, Param } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AppService } from './app.service'
 
@@ -10,12 +10,19 @@ export class AppController {
   @Post('delivery')
   @ApiOperation({ summary: 'Book delivery with carrier' })
   @ApiResponse({ status: 201, description: 'Delivery booked successfully' })
-  bookDelivery(@Body() deliveryInfo: {
+  async bookDelivery(@Body() deliveryInfo: {
     orderId: number
     deliveryDate: Date
     originAddress: string
     destinationAddress: string
   }) {
     return this.appService.bookDelivery(deliveryInfo)
+  }
+
+  @Get('delivery/:orderId')
+  @ApiOperation({ summary: 'Get delivery by order ID' })
+  @ApiResponse({ status: 200, description: 'Returns delivery info' })
+  async getDelivery(@Param('orderId') orderId: string) {
+    return this.appService.getDeliveryByOrderId(parseInt(orderId))
   }
 }
