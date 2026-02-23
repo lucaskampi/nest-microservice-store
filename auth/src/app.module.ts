@@ -7,10 +7,12 @@ import { UsersService } from './users/users.service'
 import { PrismaService } from './prisma/prisma.service'
 import { JwtStrategy } from './auth/jwt.strategy'
 import { LocalStrategy } from './auth/local.strategy'
+import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
     PassportModule,
+    HealthModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
       signOptions: { expiresIn: '24h' },
