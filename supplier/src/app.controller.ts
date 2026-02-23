@@ -10,14 +10,14 @@ export class AppController {
   @Get('info/:state')
   @ApiOperation({ summary: 'Get provider info by state' })
   @ApiResponse({ status: 200, description: 'Returns provider address' })
-  getProviderInfo(@Param('state') state: string) {
+  async getProviderInfo(@Param('state') state: string) {
     return this.appService.getProviderInfo(state)
   }
 
   @Post('order')
   @ApiOperation({ summary: 'Place order with supplier' })
   @ApiResponse({ status: 201, description: 'Order created successfully' })
-  placeOrder(@Body() items: Array<{ id: number; amount: number }>) {
+  async placeOrder(@Body() items: Array<{ id: number; amount: number }>) {
     return this.appService.placeOrder(items)
   }
 }
