@@ -9,8 +9,9 @@
     "emitDecoratorMetadata": true,
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "**/*.spec.ts"],
   "exclude": ["node_modules", "dist"]
 }
