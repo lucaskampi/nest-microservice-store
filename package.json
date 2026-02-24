@@ -2,28 +2,34 @@
   "name": "nest-microservice-store",
   "version": "1.0.0",
   "private": true,
-  "description": "NestJS Microservices Store - Portfolio Project",
+  "description": "NestJS Microservices Store - Store Service",
   "workspaces": [
     "packages/shared",
-    "auth",
-    "backend",
-    "gateway",
-    "supplier",
-    "carrier"
+    "backend"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "dev:auth": "npm run dev -w auth",
     "dev:store": "npm run dev -w backend",
-    "dev:supplier": "npm run dev -w supplier",
-    "dev:carrier": "npm run dev -w carrier",
-    "dev:gateway": "npm run dev -w gateway",
-    "dev:all": "concurrently \"npm:dev:auth\" \"npm:dev:store\" \"npm:dev:supplier\" \"npm:dev:carrier\" \"npm:dev:gateway\"",
+    "test": "npm run test -w backend",
+    "test:cov": "npm run test:cov -w backend",
+    "test:e2e": "npm run test:e2e -w backend",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/common": "^11.1.14",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.1.14",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/microservices": "^11.1.14",
+    "@nestjs/platform-express": "^11.1.14",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/terminus": "^11.1.1",
+    "@nestjs/testing": "^11.1.14"
   }
 }
