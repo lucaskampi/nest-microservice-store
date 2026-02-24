@@ -1,44 +1,7 @@
 version: '3.8'
 
 services:
-  # ==================== Application Services ====================
-  
-  gateway:
-    build: ./gateway
-    container_name: gateway
-    ports:
-      - "5000:5000"
-    environment:
-      - PORT=5000
-      - JWT_SECRET=your-secret-key-change-in-production
-      - AUTH_SERVICE_URL=http://auth:4088/api
-      - STORE_SERVICE_URL=http://store:4000/api
-      - SUPPLIER_SERVICE_URL=http://supplier:4001/api
-      - CARRIER_SERVICE_URL=http://carrier:4002/api
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-      - JAEGER_URL=http://jaeger:14268/api/traces
-    volumes:
-      - ./gateway:/app
-    depends_on:
-      - auth
-      - store
-      - supplier
-      - carrier
-      - rabbitmq
-
-  auth:
-    build: ./auth
-    container_name: auth
-    ports:
-      - "4088:4088"
-    environment:
-      - PORT=4088
-      - JWT_SECRET=your-secret-key-change-in-production
-      - DATABASE_URL=file:./prisma/dev.db
-      - JAEGER_URL=http://jaeger:14268/api/traces
-    volumes:
-      - ./auth:/app
-      - ./auth/prisma/dev.db:/app/prisma/dev.db
+  # ==================== Store Service ====================
 
   store:
     build: ./backend
@@ -48,86 +11,14 @@ services:
     environment:
       - PORT=4000
       - DATABASE_URL=file:./prisma/dev.db
-      - SUPPLIER_SERVICE_URL=http://supplier:4001/api
-      - CARRIER_SERVICE_URL=http://carrier:4002/api
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-      - JAEGER_URL=http://jaeger:14268/api/traces
     volumes:
       - ./backend:/app
       - ./backend/prisma/dev.db:/app/prisma/dev.db
     depends_on:
-      - supplier
-      - carrier
-      - rabbitmq
-
-  supplier:
-    build: ./supplier
-    container_name: supplier
-    ports:
-      - "4001:4001"
-    environment:
-      - PORT=4001
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/supplier?schema=public
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-      - JAEGER_URL=http://jaeger:14268/api/traces
-    volumes:
-      - ./supplier:/app
-    depends_on:
-      - postgres
-      - rabbitmq
-
-  carrier:
-    build: ./carrier
-    container_name: carrier
-    ports:
-      - "4002:4002"
-    environment:
-      - PORT=4002
-      - DATABASE_URL=mysql://root:root@mysql:3306/carrier
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-      - JAEGER_URL=http://jaeger:14268/api/traces
-    volumes:
-      - ./carrier:/app
-    depends_on:
-      - mysql
       - rabbitmq
 
   # ==================== Infrastructure Services ====================
-
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: supplier
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  mysql:
-    image: mysql:8
-    container_name: mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: carrier
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -147,26 +38,9 @@ services:
       timeout: 5s
       retries: 5
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.50
-    container_name: jaeger
-    restart: unless-stopped
-    ports:
-      - "16686:16686"
-      - "14268:14268"
-      - "6831:6831/udp"
-    environment:
-      COLLECTOR_OTLP_ENABLED: true
-      SPAN_STORAGE_TYPE: badger
-    volumes:
-      - jaeger_data:/var/lib/jaeger
-
 networks:
   default:
     driver: bridge
 
 volumes:
-  postgres_data:
-  mysql_data:
   rabbitmq_data:
-  jaeger_data:
