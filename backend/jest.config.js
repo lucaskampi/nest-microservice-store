@@ -7,16 +7,22 @@ module.exports = {
     '^.+\\.(t|j)s$': ['ts-jest', { isolatedModules: true }],
   },
   collectCoverageFrom: [
-    'src/**/*.service.ts',
-    'src/**/*.controller.ts',
+    'src/domain/**/*.ts',
+    'src/application/**/*.ts',
+    'src/infrastructure/**/*.ts',
+    'src/presentation/**/*.controller.ts',
     '!src/**/*.module.ts',
     '!src/main.ts',
-    '!src/tracing/tracing.service.ts',
-    '!src/health/health.controller.ts',
-    '!src/rabbitmq/rabbitmq.service.ts',
-    '!src/middleware/correlation-id.middleware.ts',
   ],
   coverageDirectory: '../coverage',
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
   testEnvironment: 'node',
   coveragePathIgnorePatterns: [
     '/node_modules/',

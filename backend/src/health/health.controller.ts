@@ -24,7 +24,7 @@ export class HealthController {
 
   @Get('live')
   @ApiOperation({ summary: 'Liveness probe' })
-  @ApiResponse({ status: 200, description: 'Service is alive' )
+  @ApiResponse({ status: 200, description: 'Service is alive' })
   live() {
     return { status: 'ok', timestamp: new Date().toISOString() }
   }
